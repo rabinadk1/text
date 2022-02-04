@@ -910,3 +910,56 @@ cc_test(
         "//tensorflow_text:wordpiece_tokenizer_cc",
     ],
 )
+
+cc_library(
+    name = "codepointwise_text_normalizer",
+    hdrs = ["codepointwise_text_normalizer.h"],
+    deps = [
+        ":darts_clone_trie_builder",
+        ":darts_clone_trie_wrapper",
+        "@com_google_absl//absl/memory",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/strings",
+        "@icu//:common",
+        # lite/kernels/shim:status_macros tensorflow dep,
+    ],
+)
+
+flatbuffer_cc_library(
+    name = "codepointwise_text_normalizer_model",
+    srcs = [
+        "codepointwise_text_normalizer_model.fbs",
+    ],
+)
+
+cc_library(
+    name = "codepointwise_text_normalizer_model_builder",
+    srcs = ["codepointwise_text_normalizer_model_builder.cc"],
+    hdrs = ["codepointwise_text_normalizer_model_builder.h"],
+    deps = [
+        ":codepointwise_text_normalizer",
+        ":codepointwise_text_normalizer_model",
+        ":darts_clone_trie_builder",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/memory",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/strings",
+        "@icu//:common",
+        "@icu//:nfkc_cf",  # Needed for NFKC_Casefold Unicode Normalization form.
+        "@com_googlesource_code_re2//:re2",
+        # tf:lib_internal_impl tensorflow dep,
+        # lite/kernels/shim:status_macros tensorflow dep,
+    ],
+)
+
+cc_test(
+    name = "codepointwise_text_normalizer_test",
+    size = "small",
+    srcs = ["codepointwise_text_normalizer_test.cc"],
+    deps = [
+        ":codepointwise_text_normalizer",
+        ":codepointwise_text_normalizer_model_builder",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
